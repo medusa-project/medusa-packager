@@ -7,9 +7,12 @@
 #
 # Crawls a directory structure and prints a list of issues to stdout.
 #
+# Will need to be run repeatedly until "Everything OK" is printed (because
+# certain issues cannot be detected until others have been fixed).
+#
 
 def print_usage
-  puts 'Usage: map_package_analyzer.rb <pathname to analyze>'
+  puts 'Usage: ruby map_package_analyzer.rb <pathname to analyze>'
 end
 
 pathname = ARGV[0]

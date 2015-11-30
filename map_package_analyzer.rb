@@ -37,6 +37,13 @@ unless File.exist?(access_path)
   continue = false
 end
 
+# check for a top-level "preservation" folder
+preservation_path = sprintf('%s%s%s', pathname, File::SEPARATOR, 'preservation')
+unless File.exist?(preservation_path)
+  puts "Missing #{preservation_path}"
+  continue = false
+end
+
 exit unless continue
 
 # check for an "access/accessMasters" folder
@@ -44,6 +51,14 @@ access_masters_path = sprintf('%s%s%s', access_path, File::SEPARATOR,
     'accessMasters')
 unless File.exist?(access_masters_path)
   puts "Missing #{access_masters_path}"
+  continue = false
+end
+
+# check for a "preservation/preservationMasters" folder
+preservation_masters_path = sprintf('%s%s%s', preservation_path,
+    File::SEPARATOR, 'preservationMasters')
+unless File.exist?(preservation_masters_path)
+  puts "Missing #{preservation_masters_path}"
   continue = false
 end
 
@@ -62,7 +77,20 @@ end
 
 exit unless continue
 
-# check for properly-named files within the bib ID folder
+# check for bib ID folders within the preservationMasters folder
+preservation_bib_ids = []
+Dir.glob(sprintf("%s%s*", preservation_masters_path, File::SEPARATOR)).
+    select{ |p| File.directory?(p) }.each do |p|
+  unless File.basename(p).match(/^[0-9]{7}/)
+    puts "#{p} does not begin with a valid bib ID."
+    continue = false
+  end
+  preservation_bib_ids << File.basename(p)
+end
+
+exit unless continue
+
+# check for properly-named files within the accessMasters bib ID folder
 Dir.glob(sprintf("%s%s*%s*", access_masters_path, File::SEPARATOR, File::SEPARATOR)).
     select{ |p| File.file?(p) }.each do |p|
   ok = false
@@ -82,39 +110,7 @@ Dir.glob(sprintf("%s%s*%s*", access_masters_path, File::SEPARATOR, File::SEPARAT
   end
 end
 
-exit unless continue
-
-# check for a top-level "preservation" folder
-preservation_path = sprintf('%s%s%s', pathname, File::SEPARATOR, 'preservation')
-unless File.exist?(preservation_path)
-  puts "Missing #{preservation_path}"
-  continue = false
-end
-
-# check for a "preservation/preservationMasters" folder
-preservation_masters_path = sprintf('%s%s%s', preservation_path,
-    File::SEPARATOR, 'preservationMasters')
-unless File.exist?(preservation_masters_path)
-  puts "Missing #{preservation_masters_path}"
-  continue = false
-end
-
-exit unless continue
-
-# check for bib ID folders within the preservationMasters folder
-preservation_bib_ids = []
-Dir.glob(sprintf("%s%s*", preservation_masters_path, File::SEPARATOR)).
-    select{ |p| File.directory?(p) }.each do |p|
-  unless File.basename(p).match(/^[0-9]{7}/)
-    puts "#{p} does not begin with a valid bib ID."
-    continue = false
-  end
-  preservation_bib_ids << File.basename(p)
-end
-
-exit unless continue
-
-# check for properly-named files within the bib ID folder
+# check for properly-named files within the preservationMasters bib ID folder
 Dir.glob(sprintf("%s%s*%s*", preservation_masters_path, File::SEPARATOR, File::SEPARATOR)).
     select{ |p| File.file?(p) }.each do |p|
   ok = false

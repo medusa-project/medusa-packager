@@ -9,6 +9,9 @@ Using on Windows:
 2) From the command prompt (cmd.exe), `cd` into the Medusa Packager folder and
    run `ruby map_package_analyzer.rb <path to analyze>`
 
+(To redirect the output to a log file instead of printing it in the terminal,
+append something like `> log.txt` to the command.)
+
 Using on Unix/OS X:
 
 1) Install RVM:
@@ -20,3 +23,6 @@ Using on Unix/OS X:
 3) `cd` into the Medusa Packager folder
 4) Install the bundle: `bundle install`
 5) Run the script: `ruby map_package_analyzer.rb <path to analyze>`
+
+(To redirect the output to a log file instead of printing it in the terminal,
+append something like `> log.txt` to the command.)

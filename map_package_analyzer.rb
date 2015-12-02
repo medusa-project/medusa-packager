@@ -30,69 +30,35 @@ unless File.exist?(pathname)
   continue = false
 end
 
-# check for a top-level "access" folder
-access_path = sprintf('%s%s%s', pathname, File::SEPARATOR, 'access')
-unless File.exist?(access_path)
-  puts "Missing #{access_path}"
-  continue = false
-end
-
-# check for a top-level "preservation" folder
-preservation_path = sprintf('%s%s%s', pathname, File::SEPARATOR, 'preservation')
-unless File.exist?(preservation_path)
-  puts "Missing #{preservation_path}"
-  continue = false
-end
-
 exit unless continue
 
-# check for an "access/accessMasters" folder
-access_masters_path = sprintf('%s%s%s', access_path, File::SEPARATOR,
-    'accessMasters')
-unless File.exist?(access_masters_path)
-  puts "Missing #{access_masters_path}"
-  continue = false
-end
-
-# check for a "preservation/preservationMasters" folder
-preservation_masters_path = sprintf('%s%s%s', preservation_path,
-    File::SEPARATOR, 'preservationMasters')
-unless File.exist?(preservation_masters_path)
-  puts "Missing #{preservation_masters_path}"
-  continue = false
-end
-
-exit unless continue
-
-# check for bib ID folders within the accessMasters folder
-access_bib_ids = []
-Dir.glob(sprintf("%s%s*", access_masters_path, File::SEPARATOR)).
-    select{ |p| File.directory?(p) }.each do |p|
+# check that all folders within the root package folder are bib ID folders
+Dir.glob(pathname + '/*').select{ |p| File.directory?(p) }.each do |p|
   unless File.basename(p).match(/^[0-9]{7}/)
     puts "#{p} does not begin with a valid bib ID."
     continue = false
   end
-  access_bib_ids << File.basename(p)
 end
 
 exit unless continue
 
-# check for bib ID folders within the preservationMasters folder
-preservation_bib_ids = []
-Dir.glob(sprintf("%s%s*", preservation_masters_path, File::SEPARATOR)).
-    select{ |p| File.directory?(p) }.each do |p|
-  unless File.basename(p).match(/^[0-9]{7}/)
-    puts "#{p} does not begin with a valid bib ID."
-    continue = false
+# check that each bib ID folder contains access, preservation, and metadata
+# folders
+Dir.glob(pathname + '/*').select{ |p| File.directory?(p) }.each do |p|
+  any_missing = false
+  %w(access preservation metadata).each do |expected|
+    unless File.directory?(p + '/' + expected)
+      any_missing = true
+      puts "Missing folder: #{p}"
+    end
   end
-  preservation_bib_ids << File.basename(p)
+  continue = false if any_missing
 end
 
 exit unless continue
 
-# check for properly-named files within the accessMasters bib ID folder
-Dir.glob(sprintf("%s%s*%s*", access_masters_path, File::SEPARATOR, File::SEPARATOR)).
-    select{ |p| File.file?(p) }.each do |p|
+# check for properly-named files within each access folder
+Dir.glob(pathname + '/*/access/*').select{ |p| File.file?(p) }.each do |p|
   ok = false
   parts = File.basename(p).split('_')
   if parts.length == 2
@@ -110,9 +76,8 @@ Dir.glob(sprintf("%s%s*%s*", access_masters_path, File::SEPARATOR, File::SEPARAT
   end
 end
 
-# check for properly-named files within the preservationMasters bib ID folder
-Dir.glob(sprintf("%s%s*%s*", preservation_masters_path, File::SEPARATOR, File::SEPARATOR)).
-    select{ |p| File.file?(p) }.each do |p|
+# check for properly-named files within each preservation folder
+Dir.glob(pathname + '/*/preservation/*').select{ |p| File.file?(p) }.each do |p|
   ok = false
   parts = File.basename(p).split('_')
   if parts.length == 2
@@ -132,18 +97,28 @@ end
 
 exit unless continue
 
-tmp = access_bib_ids - preservation_bib_ids
-if tmp.any?
-  puts 'Access masters not present in preservation masters:'
-  puts tmp.join("\n")
-  exit
+bib_ids_with_access_files = Set.new
+Dir.glob(pathname + '/*/access/*').select{ |p| File.file?(p) }.each do |p|
+  bib_ids_with_access_files << File.basename(File.dirname(File.dirname(p)))
 end
 
-tmp = preservation_bib_ids - access_bib_ids
-if tmp.any?
-  puts 'Preservation masters not present in access masters:'
-  puts tmp.join("\n")
-  exit
+bib_ids_with_preservation_files = Set.new
+Dir.glob(pathname + '/*/preservation/*').select{ |p| File.file?(p) }.each do |p|
+  bib_ids_with_preservation_files << File.basename(File.dirname(File.dirname(p)))
 end
+
+tmp1 = bib_ids_with_access_files - bib_ids_with_preservation_files
+if tmp1.any?
+  puts 'Contains preservation masters but no access masters:' + tmp1.join("\n")
+  continue = false
+end
+
+tmp2 = bib_ids_with_preservation_files - bib_ids_with_access_files
+if tmp2.any?
+  puts 'Contains access masters but no preservation masters:' + tmp2.join("\n")
+  continue = false
+end
+
+exit unless continue
 
 puts 'Everything OK'

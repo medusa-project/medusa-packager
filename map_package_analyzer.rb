@@ -45,14 +45,23 @@ exit unless continue
 # check that each bib ID folder contains access, preservation, and metadata
 # folders
 Dir.glob(pathname + '/*').select{ |p| File.directory?(p) }.each do |p|
+  expected_folders = %w(access metadata preservation)
   any_missing = false
-  %w(access preservation metadata).each do |expected|
+  expected_folders.each do |expected|
     unless File.directory?(p + '/' + expected)
       any_missing = true
       puts "Missing folder: #{p}"
     end
   end
   continue = false if any_missing
+
+  actual_folders = Dir.glob(p + '/*').select{ |p| File.directory?(p) }.
+      map{ |p| File.basename(p) }
+  extra_folders = actual_folders - expected_folders
+  extra_folders.each do |p2|
+    continue = false
+    puts "Extraneous folder: #{p}#{File::SEPARATOR}#{p2}"
+  end
 end
 
 exit unless continue

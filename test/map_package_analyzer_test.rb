@@ -52,6 +52,12 @@ class MapPackageAnalyzerTest < Minitest::Test
     assert(output.include?('does not begin with'))
   end
 
+  def test_bib_id_folder_with_extraneous_subfolder
+    FileUtils.mkdir_p(fixture_pathname + '/0123456/bogus')
+    output = run_analyzer(fixture_pathname)
+    assert(output.start_with?('Extraneous folder:'))
+  end
+
   def test_with_missing_access_folder
     FileUtils.rm_r(fixture_pathname + '/0123456/access')
     output = run_analyzer(fixture_pathname)

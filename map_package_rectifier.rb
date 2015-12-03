@@ -49,30 +49,78 @@ Dir.glob(pathname + '/**/Thumbs.db').each do |p|
   File.delete(p)
 end
 
-# move the contents of "jp2" folders into the parent folder and delete
+# move access/accessMasters/[bib ID] folders into [bib ID]/access/
 Dir.glob(pathname + '/access/accessMasters/*').each do |p|
-  jp2_folder = p + File::SEPARATOR + 'jp2'
-  if File.exist?(jp2_folder)
-    puts "Moving #{jp2_folder}#{File::SEPARATOR}* up one level"
-    Dir.glob(jp2_folder + '/*').each do |p|
-      begin
-        FileUtils.mv(p, File.dirname(p) + '/..', force: true)
-      rescue => e
-        if e.message.start_with?('File exists')
-          puts "Unable to move up one level: #{p}"
-        else
-          puts e
-        end
-        exit
-      end
-    end
-    puts "Deleting #{jp2_folder}"
-    FileUtils.rmdir(jp2_folder)
+  dest = pathname + '/' + File.basename(p)
+  unless File.directory?(dest)
+    puts "Creating #{dest}"
+    FileUtils.mkdir_p(dest)
   end
+  puts "Moving #{p} to #{dest}/access"
+  FileUtils.mv(p, dest + '/access')
+end
+
+# move preservation/preservationMasters/[bib ID] folders into
+# [bib ID]/preservation/ or, if that already exists, only move the contents
+Dir.glob(pathname + '/preservation/preservationMasters/*').each do |p|
+  dest = pathname + '/' + File.basename(p)
+  unless File.directory?(dest)
+    puts "Creating #{dest}"
+    FileUtils.mkdir_p(dest)
+  end
+  puts "Moving #{p} to #{dest}/preservation"
+  FileUtils.mv(p, dest + '/preservation')
+end
+
+# move [bib ID]/**/*.xml files into [bib ID]/metadata
+Dir.glob(pathname + '/**/*.xml').each do |p|
+  dest = File.dirname(p) + '/../metadata'
+  unless File.directory?(dest)
+    puts "Creating #{dest}"
+    FileUtils.mkdir_p(dest)
+  end
+  puts "Moving #{p} to #{dest}"
+  FileUtils.mv(p, dest)
+end
+
+# delete access folder if present and empty
+if File.directory?(pathname + '/access/accessMasters')
+  Dir.rmdir(pathname + '/access/accessMasters')
+end
+if File.directory?(pathname + '/access')
+  Dir.rmdir(pathname + '/access')
+end
+
+# delete preservation folder if present and empty
+if File.directory?(pathname + '/preservation/preservationMasters')
+  Dir.rmdir(pathname + '/preservation/preservationMasters')
+end
+if File.directory?(pathname + '/preservation')
+  Dir.rmdir(pathname + '/preservation')
+end
+
+# move the contents of "jp2" folders into the parent folder and delete
+Dir.glob(pathname + '/*/access/*').
+    select{ |p| File.directory?(p) and File.basename(p) == 'jp2' }.each do |p|
+  puts "Moving #{p}#{File::SEPARATOR}* up one level"
+  Dir.glob(p + '/*').each do |p2|
+    begin
+      FileUtils.mv(p2, File.dirname(p2) + '/..', force: true)
+    rescue => e
+      if e.message.start_with?('File exists')
+        puts "Unable to move up one level: #{p2}"
+      else
+        puts e
+      end
+      exit
+    end
+  end
+  puts "Deleting #{p}"
+  FileUtils.rmdir(p)
 end
 
 # convert access master .tif files to .jp2
-Dir.glob(pathname + '/access/**/*.tif').each do |p|
+Dir.glob(pathname + '/*/access/*.tif').each do |p|
   jp2_pathname = p.gsub('.tif', '.jp2')
   if File.size(p) > 0
     # [0] selects only the first embedded image, if there are >1

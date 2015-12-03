@@ -79,8 +79,10 @@ Dir.glob(pathname + '/**/*.xml').each do |p|
     puts "Creating #{dest}"
     FileUtils.mkdir_p(dest)
   end
-  puts "Moving #{p} to #{dest}"
-  FileUtils.mv(p, dest)
+  unless File.identical?(File.dirname(p), dest)
+    puts "Moving #{p} to #{dest}"
+    FileUtils.mv(p, dest)
+  end
 end
 
 # delete access folder if present and empty

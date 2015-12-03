@@ -21,7 +21,7 @@ class MapPackageAnalyzerTest < Minitest::Test
     FileUtils.touch("#{base}/0123456/access/0123456_001.jp2")
     FileUtils.touch("#{base}/0123456/access/0123456_key.jp2")
     FileUtils.touch("#{base}/0123456/access/0123456_title.jp2")
-
+    FileUtils.touch("#{base}/0123456/metadata/item_0123456.xml")
     FileUtils.touch("#{base}/0123456/preservation/0123456_001.tif")
     FileUtils.touch("#{base}/0123456/preservation/0123456_key.tif")
     FileUtils.touch("#{base}/0123456/preservation/0123456_title.tif")
@@ -43,6 +43,7 @@ class MapPackageAnalyzerTest < Minitest::Test
 
   def test_with_valid_structure_displays_ok
     output = run_analyzer(fixture_pathname)
+    puts output
     assert(output.include?('Everything OK'))
   end
 
@@ -112,7 +113,7 @@ class MapPackageAnalyzerTest < Minitest::Test
       FileUtils.rm_r(p)
     end
     output = run_analyzer(base)
-    assert(output.include?('Contains preservation masters but no access masters: 0123456'))
+    assert(output.include?('No access master(s): 0123456'))
   end
 
   def test_with_missing_preservation_masters
@@ -121,7 +122,7 @@ class MapPackageAnalyzerTest < Minitest::Test
       FileUtils.rm_r(p)
     end
     output = run_analyzer(base)
-    assert(output.include?('Contains access masters but no preservation masters: 0123456'))
+    assert(output.include?('No preservation master(s): 0123456'))
   end
 
   private

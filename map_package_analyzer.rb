@@ -64,8 +64,6 @@ Dir.glob(pathname + '/*').select{ |p| File.directory?(p) }.each do |p|
   end
 end
 
-exit unless continue
-
 # check for properly-named files within each access folder
 Dir.glob(pathname + '/*/access/*').select{ |p| File.file?(p) }.each do |p|
   ok = false
@@ -104,28 +102,19 @@ Dir.glob(pathname + '/*/preservation/*').select{ |p| File.file?(p) }.each do |p|
   end
 end
 
-exit unless continue
-
-bib_ids_with_access_files = Set.new
-Dir.glob(pathname + '/*/access/*').select{ |p| File.file?(p) }.each do |p|
-  bib_ids_with_access_files << File.basename(File.dirname(File.dirname(p)))
-end
-
-bib_ids_with_preservation_files = Set.new
-Dir.glob(pathname + '/*/preservation/*').select{ |p| File.file?(p) }.each do |p|
-  bib_ids_with_preservation_files << File.basename(File.dirname(File.dirname(p)))
-end
-
-tmp1 = bib_ids_with_access_files - bib_ids_with_preservation_files
-if tmp1.any?
-  puts 'Contains access masters but no preservation masters: ' + tmp1.to_a.join("\n")
-  continue = false
-end
-
-tmp2 = bib_ids_with_preservation_files - bib_ids_with_access_files
-if tmp2.any?
-  puts 'Contains preservation masters but no access masters: ' + tmp2.to_a.join("\n")
-  continue = false
+Dir.glob(pathname + '/*').select{ |p| File.directory?(p) }.each do |p|
+  unless Dir.glob(p + '/access/*').any?
+    puts 'No access master(s): ' + File.basename(p)
+    continue = false
+  end
+  unless Dir.glob(p + '/preservation/*').any?
+    puts 'No preservation master(s): ' + File.basename(p)
+    continue = false
+  end
+  unless Dir.glob(p + '/metadata/item_*.xml').any?
+    puts 'No metadata: ' + File.basename(p)
+    continue = false
+  end
 end
 
 exit unless continue

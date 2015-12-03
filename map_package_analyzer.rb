@@ -50,7 +50,7 @@ Dir.glob(pathname + '/*').select{ |p| File.directory?(p) }.each do |p|
   expected_folders.each do |expected|
     unless File.directory?(p + '/' + expected)
       any_missing = true
-      puts "Missing folder: #{p}"
+      puts "Missing folder: #{p}/#{expected}"
     end
   end
   continue = false if any_missing

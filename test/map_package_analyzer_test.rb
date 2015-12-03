@@ -106,6 +106,24 @@ class MapPackageAnalyzerTest < Minitest::Test
     assert(output.include?('has an incorrect filename format'))
   end
 
+  def test_with_missing_access_masters
+    base = fixture_pathname
+    Dir.glob("#{base}/0123456/access/*").each do |p|
+      FileUtils.rm_r(p)
+    end
+    output = run_analyzer(base)
+    assert(output.include?('Contains preservation masters but no access masters: 0123456'))
+  end
+
+  def test_with_missing_preservation_masters
+    base = fixture_pathname
+    Dir.glob("#{base}/0123456/preservation/*").each do |p|
+      FileUtils.rm_r(p)
+    end
+    output = run_analyzer(base)
+    assert(output.include?('Contains access masters but no preservation masters: 0123456'))
+  end
+
   private
 
   def run_analyzer(*args)

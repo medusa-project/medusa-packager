@@ -118,13 +118,13 @@ end
 
 tmp1 = bib_ids_with_access_files - bib_ids_with_preservation_files
 if tmp1.any?
-  puts 'Contains preservation masters but no access masters:' + tmp1.join("\n")
+  puts 'Contains access masters but no preservation masters: ' + tmp1.to_a.join("\n")
   continue = false
 end
 
 tmp2 = bib_ids_with_preservation_files - bib_ids_with_access_files
 if tmp2.any?
-  puts 'Contains access masters but no preservation masters:' + tmp2.join("\n")
+  puts 'Contains preservation masters but no access masters: ' + tmp2.to_a.join("\n")
   continue = false
 end
 

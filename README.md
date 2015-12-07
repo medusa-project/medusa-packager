@@ -28,3 +28,7 @@ into conformance with a given package profile.
 
    (To redirect the output to a log file instead of printing it in the terminal,
    append something like `> log.txt` to the command.)
+
+## Notes
+
+* Text files should have CRLF line endings for platform-interoperability.

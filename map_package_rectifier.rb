@@ -118,8 +118,7 @@ else
 end
 
 # move the contents of "jp2" folders into the parent folder and delete
-Dir.glob(pathname + '/*/access/*').
-    select{ |p| File.directory?(p) and File.basename(p) == 'jp2' }.each do |p|
+Dir.glob(pathname + '/*/access/jp2').select{ |p| File.directory?(p) }.each do |p|
   puts "Moving #{p}#{File::SEPARATOR}* up one level"
   Dir.glob(p + '/*').each do |p2|
     begin

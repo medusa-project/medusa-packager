@@ -86,19 +86,35 @@ Dir.glob(pathname + '/**/*.xml').each do |p|
 end
 
 # delete access folder if present and empty
-if File.directory?(pathname + '/access/accessMasters')
-  Dir.rmdir(pathname + '/access/accessMasters')
+to_delete = pathname + '/access/accessMasters'
+if File.directory?(to_delete) and Dir.entries(to_delete).length == 0
+  puts "Deleting #{to_delete}"
+  Dir.rmdir(to_delete)
+else
+  puts "Unable to delete #{to_delete}"
 end
-if File.directory?(pathname + '/access')
-  Dir.rmdir(pathname + '/access')
+to_delete = pathname + '/access'
+if File.directory?(to_delete) and Dir.entries(to_delete).length == 0
+  puts "Deleting #{to_delete}"
+  Dir.rmdir(to_delete)
+else
+  puts "Unable to delete #{to_delete}"
 end
 
 # delete preservation folder if present and empty
-if File.directory?(pathname + '/preservation/preservationMasters')
-  Dir.rmdir(pathname + '/preservation/preservationMasters')
+to_delete = pathname + '/preservation/preservationMasters'
+if File.directory?(to_delete) and Dir.entries(to_delete).length == 0
+  puts "Deleting #{to_delete}"
+  Dir.rmdir(to_delete)
+else
+  puts "Unable to delete #{to_delete}"
 end
-if File.directory?(pathname + '/preservation')
-  Dir.rmdir(pathname + '/preservation')
+to_delete = pathname + '/preservation'
+if File.directory?(to_delete) and Dir.entries(to_delete).length == 0
+  puts "Deleting #{to_delete}"
+  Dir.rmdir(to_delete)
+else
+  puts "Unable to delete #{to_delete}"
 end
 
 # move the contents of "jp2" folders into the parent folder and delete

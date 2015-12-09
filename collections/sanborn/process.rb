@@ -129,7 +129,7 @@ csv.each_with_index do |row, i|
           xml.text('image/jp2')
         }
         xml['lrp'].accessMasterPathname {
-          xml.text("/#{r['Local Bib ID']}/access/#{r['File Name']}.jp2")
+          xml.text("/#{r['Local Bib ID']}/access/#{r['File Name']}".chomp('.jp2') + '.jp2')
         }
       end
       xml['lrp'].collectionId {
@@ -154,7 +154,7 @@ csv.each_with_index do |row, i|
           xml.text('image/tiff')
         }
         xml['lrp'].preservationMasterPathname {
-          xml.text("/#{r['Local Bib ID']}/preservation/#{r['File Name']}.tif")
+          xml.text("/#{r['Local Bib ID']}/preservation/#{r['File Name']}".chomp('.tif') + '.tif')
         }
       end
     }

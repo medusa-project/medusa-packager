@@ -5,7 +5,9 @@ into conformance with a given package profile.
 
 [More information](https://uofi.app.box.com/notes/43514306333)
 
-## Using on Windows
+## Usage
+
+### Windows
 
 1. [Install Ruby 2.2.3](http://rubyinstaller.org)
 2. From the command prompt (cmd.exe), `cd` into the Medusa Packager folder and
@@ -14,7 +16,7 @@ into conformance with a given package profile.
    (To redirect the output to a log file instead of printing it in the terminal,
    append something like `> log.txt` to the command.)
 
-## Using on Unix/OS X
+### Unix/OS X
 
 1. Install RVM:
 
@@ -28,6 +30,20 @@ into conformance with a given package profile.
 
    (To redirect the output to a log file instead of printing it in the terminal,
    append something like `> log.txt` to the command.)
+
+## Workflow
+
+### Updating Metadata
+
+1. Update the source metadata in Excel
+2. Export to CSV
+3. Run the collection-specific `process.rb` script, with the destination
+   pathname of the package, to generate LRP AIP XML files from it in the
+   correct structure
+
+### Validating Packages
+
+Use the `map_package_analyzer.rb` script to check packages for errors.
 
 ## Notes
 

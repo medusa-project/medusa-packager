@@ -32,7 +32,7 @@ unless File.exist?(dest_root)
   exit
 end
 
-page_counter = 0
+page_number = 0
 csv = CSV.parse(File.read(source_pathname), headers: true)
 csv.each_with_index do |row, i|
   # Uncomment to run individual rows (start with 0; header doesn't count)
@@ -135,18 +135,18 @@ csv.each_with_index do |row, i|
       xml['lrp'].collectionId {
         xml.text('sanborn')
       }
-      unless r['File Name'].nil?
+      if r['File Name'].nil?
+        page_number = 0
+      else
         parents = csv.find_all{|parent| parent['Local Bib ID'] == r['Local Bib ID'] && parent['File Name'].nil?}
         if parents.any?
-          page_counter += 1
+          page_number += 1
           xml['lrp'].pageNumber {
-            xml.text(page_counter)
+            xml.text(page_number)
           }
           xml['lrp'].parentId {
             xml.text(parents.first.to_hash['Local Bib ID'])
           }
-        else
-          page_counter = 0
         end
       end
       unless r['File Name'].nil?

@@ -40,6 +40,9 @@ into conformance with a given package profile.
 3. Run the collection-specific `process.rb` script, with the destination
    pathname of the package, to generate LRP AIP XML files from it in the
    correct structure
+4. Re-index the collection in
+   [PearTree](https://github.com/medusa-project/PearTree) with
+   `bundle exec rake peartree:index[/pathname/of/collection]`
 
 ### Validating Packages
 

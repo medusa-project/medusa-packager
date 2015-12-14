@@ -11,8 +11,42 @@
 # certain issues cannot be detected until others have been fixed).
 #
 
+require 'net/http'
+require 'openssl'
+
+##
+# @param schema_name [String] XSD filename
+# @return [String] Schema body
+#
+def get_schema(schema_name)
+  uri = 'https://raw.githubusercontent.com/medusa-project/PearTree/develop/' +
+  'public/schema/1/' + schema_name
+  uri = URI.parse(uri)
+
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = true
+  http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+  request = Net::HTTP::Get.new(uri.request_uri)
+  response = http.request(request)
+
+  response.code.to_i >= 400 ? nil : response.body
+end
+
 def print_usage
   puts 'Usage: ruby map_package_analyzer.rb <pathname to analyze>'
+end
+
+##
+# @param doc [Nokogiri::XML::Document]
+# @param schema [String] Schema body
+# @raise [RuntimeError] If validation fails
+# @return [void]
+#
+def validate(doc, schema)
+  xsd = Nokogiri::XML::Schema(schema)
+  xsd.validate(doc).each do |error|
+    raise error.message
+  end
 end
 
 # The script will check this after each "step" and abort if false.
@@ -113,6 +147,19 @@ Dir.glob(pathname + '/*').select{ |p| File.directory?(p) }.each do |p|
   end
   unless Dir.glob(p + '/metadata/item_*.xml').any?
     puts 'No metadata: ' + File.basename(p)
+    continue = false
+  end
+end
+
+# validate item metadata files
+item_schema = get_schema('object.xsd')
+Dir.glob(pathname + '/metadata/item_*.xml').each do |p|
+  begin
+    doc = Nokogiri::XML(File.read(p), &:noblanks)
+    doc.encoding = 'utf-8'
+    validate(doc, schema)
+  rescue => e
+    puts "Invalid: #{p} (#{e})"
     continue = false
   end
 end

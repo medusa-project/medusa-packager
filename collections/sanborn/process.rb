@@ -32,6 +32,9 @@ unless File.exist?(dest_root)
   exit
 end
 
+# copy collection.xml into place
+FileUtils.cp(__dir__ + '/source/collection.xml', dest_root)
+
 page_number = 0
 csv = CSV.parse(File.read(source_pathname), headers: true)
 csv.each_with_index do |row, i|
@@ -59,7 +62,18 @@ csv.each_with_index do |row, i|
       xml['lrp'].repositoryId {
         xml.text(object_id)
       }
-
+      if r['File Name'].nil?
+        children = csv.find_all{ |child| child['Local Bib ID'] == r['Local Bib ID'] && child['File Name'] }
+        if children.any?
+          xml['lrp'].representativeItemId {
+            xml.text(children.first.to_hash['File Name'])
+          }
+        end
+      else
+        xml['lrp'].representativeItemId {
+          xml.text(object_id)
+        }
+      end
       xml['lrp'].alternativeTitle {
         xml.text(r['Alternative Title'])
       }

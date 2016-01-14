@@ -160,7 +160,7 @@ csv.each_with_index do |row, i|
       if r['File Name'].nil?
         page_number = 0
       else
-        parents = csv.find_all{|parent| parent['Local Bib ID'] == r['Local Bib ID'] && parent['File Name'].nil?}
+        parents = csv.find_all{ |parent| parent['Local Bib ID'] == r['Local Bib ID'] && parent['CONTENTdm file name'].end_with?('.cpd') }
         if parents.any?
           page_number += 1
           xml['lrp'].pageNumber {

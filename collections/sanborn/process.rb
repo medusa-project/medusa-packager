@@ -77,9 +77,11 @@ csv.each_with_index do |row, i|
       xml['lrp'].alternativeTitle {
         xml.text(r['Alternative Title'])
       }
-      xml['lrp'].cartographicScale {
-        xml.text(r['Scale'])
-      }
+      r['Scale'].split(';').each do |scale|
+        xml['lrp'].cartographicScale {
+          xml.text(scale.strip)
+        }
+      end
       xml['lrp'].creator {
         xml.text(r['Creator'])
       }
@@ -89,9 +91,11 @@ csv.each_with_index do |row, i|
       xml['lrp'].dimensions {
         xml.text(r['Dimensions'])
       }
-      xml['lrp'].extent {
-        xml.text(r['Extent'])
-      }
+      r['Extent'].split(';').each do |extent|
+        xml['lrp'].extent {
+          xml.text(extent.strip)
+        }
+      end
       xml['lrp'].isPartOf {
         xml.text(r['Collection'])
       }
@@ -106,9 +110,11 @@ csv.each_with_index do |row, i|
           xml.text(dd)
         } if dd
       end
-      xml['lrp'].notes {
-        xml.text(r['Notes'])
-      }
+      r['Notes'].split(';').each do |note|
+        xml['lrp'].notes {
+          xml.text(note.strip)
+        }
+      end
       xml['lrp'].physicalLocation {
         xml.text(r['Physical Location'])
       }
@@ -118,17 +124,19 @@ csv.each_with_index do |row, i|
       xml['lrp'].publisher {
         xml.text(r['Publisher'])
       }
-      xml['lrp'].spatialCoverage {
-        xml.text(r['Coverage-Spatial'])
-      }
+      r['Coverage-Spatial'].split(';').each do |c|
+        xml['lrp'].spatialCoverage {
+          xml.text(c.strip)
+        }
+      end
       r['Genre'].split('; ').each do |genre|
         xml['lrp'].subject {
-          xml.text(genre)
+          xml.text(genre.strip)
         }
       end
       r['Subject'].split('; ').each do |subject|
         xml['lrp'].subject {
-          xml.text(subject)
+          xml.text(subject.strip)
         }
       end if r['Subject']
       xml['lrp'].title {

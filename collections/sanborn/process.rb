@@ -80,10 +80,12 @@ csv.each_with_index do |row, i|
       xml['lrp'].alternativeTitle {
         xml.text(r['Alternative Title'])
       }
-      r['Scale'].split(';').each do |scale|
-        xml['lrp'].cartographicScale {
-          xml.text(scale.strip)
-        }
+      if r['Scale']
+        r['Scale'].split(';').each do |scale|
+          xml['lrp'].cartographicScale {
+            xml.text(scale.strip)
+          }
+        end
       end
       xml['lrp'].creator {
         xml.text(r['Creator'])
@@ -94,10 +96,12 @@ csv.each_with_index do |row, i|
       xml['lrp'].dimensions {
         xml.text(r['Dimensions'])
       }
-      r['Extent'].split(';').each do |extent|
-        xml['lrp'].extent {
-          xml.text(extent.strip)
-        }
+      if r['Extent']
+        r['Extent'].split(';').each do |extent|
+          xml['lrp'].extent {
+            xml.text(extent.strip)
+          }
+        end
       end
       xml['lrp'].isPartOf {
         xml.text(r['Collection'])
@@ -113,10 +117,12 @@ csv.each_with_index do |row, i|
           xml.text(dd)
         } if dd
       end
-      r['Notes'].split(';').each do |note|
-        xml['lrp'].notes {
-          xml.text(note.strip)
-        }
+      if r['Notes']
+        r['Notes'].split(';').each do |note|
+          xml['lrp'].notes {
+            xml.text(note.strip)
+          }
+        end
       end
       xml['lrp'].physicalLocation {
         xml.text(r['Physical Location'])
@@ -127,21 +133,27 @@ csv.each_with_index do |row, i|
       xml['lrp'].publisher {
         xml.text(r['Publisher'])
       }
-      r['Coverage-Spatial'].split(';').each do |c|
-        xml['lrp'].spatialCoverage {
-          xml.text(c.strip)
-        }
+      if r['Coverage-Spatial']
+        r['Coverage-Spatial'].split(';').each do |c|
+          xml['lrp'].spatialCoverage {
+            xml.text(c.strip)
+          }
+        end
       end
-      r['Genre'].split('; ').each do |genre|
-        xml['lrp'].subject {
-          xml.text(genre.strip)
-        }
+      if r['Genre']
+        r['Genre'].split('; ').each do |genre|
+          xml['lrp'].subject {
+            xml.text(genre.strip)
+          }
+        end
       end
-      r['Subject'].split('; ').each do |subject|
-        xml['lrp'].subject {
-          xml.text(subject.strip)
-        }
-      end if r['Subject']
+      if r['Subject']
+        r['Subject'].split('; ').each do |subject|
+          xml['lrp'].subject {
+            xml.text(subject.strip)
+          }
+        end
+      end
       xml['lrp'].title {
         xml.text(r['Title'])
       }

@@ -81,7 +81,7 @@ csv.each_with_index do |row, i|
         xml.text(r['Alternative Title'])
       }
       if r['Scale']
-        r['Scale'].gsub('. ;', '.;').split('.;').each do |scale|
+        r['Scale'].split(';').each do |scale|
           xml['lrp'].cartographicScale {
             xml.text(scale.strip)
           }
@@ -97,7 +97,7 @@ csv.each_with_index do |row, i|
         xml.text(r['Dimensions'])
       }
       if r['Extent']
-        r['Extent'].gsub('. ;', '.;').split('.;').each do |extent|
+        r['Extent'].split(';').each do |extent|
           xml['lrp'].extent {
             xml.text(extent.strip)
           }
@@ -134,21 +134,21 @@ csv.each_with_index do |row, i|
         xml.text(r['Publisher'])
       }
       if r['Coverage-Spatial']
-        r['Coverage-Spatial'].gsub('. ;', '.;').split('.;').each do |c|
+        r['Coverage-Spatial'].split(';').each do |c|
           xml['lrp'].spatialCoverage {
             xml.text(c.strip)
           }
         end
       end
       if r['Genre']
-        r['Genre'].gsub('. ;', '.;').split('.;').each do |genre|
+        r['Genre'].split(';').each do |genre|
           xml['lrp'].subject {
             xml.text(genre.strip)
           }
         end
       end
       if r['Subject']
-        r['Subject'].gsub('. ;', '.;').split('.;').each do |subject|
+        r['Subject'].split(';').each do |subject|
           xml['lrp'].subject {
             xml.text(subject.strip)
           }

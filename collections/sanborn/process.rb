@@ -48,6 +48,9 @@ csv.each_with_index do |row, i|
 
   builder = Nokogiri::XML::Builder.new do |xml|
     xml['lrp'].Object("xmlns:lrp" => "http://www.library.illinois.edu/lrp/terms#") {
+      xml['lrp'].bibId {
+        xml.text(r['Local Bib ID'])
+      }
       xml['lrp'].created {
         parts = r['Date created'].split('/')
         xml.text(DateTime.parse("20#{parts[2]}/#{parts[0]}/#{parts[1]}").iso8601.gsub('+00:00', '') + 'Z')

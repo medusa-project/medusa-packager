@@ -9,8 +9,9 @@ into conformance with a given package profile.
 
 ### Windows
 
-1. [Install Ruby 2.2.3](http://rubyinstaller.org)
-2. From the command prompt (cmd.exe), `cd` into the Medusa Packager folder and
+1. [Install Kakadu](http://kakadusoftware.com/)
+2. [Install Ruby 2.2.3](http://rubyinstaller.org)
+3. From the command prompt (cmd.exe), `cd` into the Medusa Packager folder and
    run: `ruby map_package_analyzer.rb <path to analyze>`
 
    (To redirect the output to a log file instead of printing it in the terminal,
@@ -18,15 +19,16 @@ into conformance with a given package profile.
 
 ### Unix/OS X
 
-1. Install RVM:
+1. [Install Kakadu](http://kakadusoftware.com/)
+2. Install RVM:
 
         gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
         \curl -sSL https://get.rvm.io | bash -s stable
 
-2. Install Bundler: `gem install bundler`
-3. `cd` into the Medusa Packager folder
-4. Install the bundle: `bundle install`
-5. Run the script: `ruby map_package_analyzer.rb <path to analyze>`
+3. Install Bundler: `gem install bundler`
+4. `cd` into the Medusa Packager folder
+5. Install the bundle: `bundle install`
+6. Run the script: `ruby map_package_analyzer.rb <path to analyze>`
 
    (To redirect the output to a log file instead of printing it in the terminal,
    append something like `> log.txt` to the command.)

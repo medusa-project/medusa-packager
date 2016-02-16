@@ -8,26 +8,22 @@
 # Crawls a directory structure and attempts to bring it into conformance with
 # the Maps Package Profile.
 #
-# Requires ImageMagick to be installed with the JPEG2000 delegate.
+# Requires Kakadu to be installed.
 #
 
 require 'fileutils'
 
-# check for the imagemagick jpeg2000 delegate
-def im_jp2_delegate_installed?
-  delegate_present = false
-  `identify -list format`.each_line do |line|
-    return true if line.include?('JP2* JP2')
-  end
-  false
+# check for kdu_compress
+def kdu_compress_installed?
+  system('kdu_compress')
 end
 
 def print_usage
   puts 'Usage: ruby map_package_rectifier.rb <pathname to rectify>'
 end
 
-unless im_jp2_delegate_installed?
-  puts 'This tool requires the ImageMagick JPEG2000 delegate.'
+unless kdu_compress_installed?
+  puts 'This tool requires the Kakadu binaries.'
   exit
 end
 
@@ -140,9 +136,11 @@ end
 Dir.glob(pathname + '/*/access/*.tif').each do |p|
   jp2_pathname = p.gsub('.tif', '.jp2')
   if File.size(p) > 0
-    # [0] selects only the first embedded image, if there are >1
     puts "Converting #{p} to #{jp2_pathname}"
-    if system("convert #{p}[0] #{jp2_pathname}")
+    # http://iipimage.sourceforge.net/documentation/images
+    result = system("kdu_compress -i #{p} -o #{jp2_pathname} -rate 2.5 " +
+    "Clayers=1 Clevels=7 " + \"Cprecincts={256,256}\" \"Corder=RPCL\" " + \"Cblk={64,64}\" Cuse_sop=yes")
+    if result
       puts "Deleting #{p}"
       File.delete(p)
     end

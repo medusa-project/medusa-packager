@@ -12,12 +12,12 @@ end
 source_pathname = ARGV[0]
 dest_root = ARGV[1]
 if !source_pathname or !dest_root
-  puts 'Usage: process.rb <source CSV file> <destination root pathname>'
+  puts 'Usage: process.rb <source TSV file> <destination root pathname>'
   exit
 end
 
-if !source_pathname.end_with?('.csv')
-  puts 'Source pathname must be a .csv file.'
+if !source_pathname.end_with?('.tsv')
+  puts 'Source pathname must be a .tsv file.'
   exit
 end
 
@@ -35,14 +35,17 @@ end
 # copy collection.xml into place
 FileUtils.cp(__dir__ + '/source/collection.xml', dest_root)
 
-page_number = 0
-csv = CSV.parse(File.read(source_pathname), headers: true)
-csv.each_with_index do |row, i|
+# quote_char needs to be a character that the source data is guaranteed not
+# to contain: in this case, a unicode rocket ship.
+tsv = CSV.parse(File.read(source_pathname), headers: true, col_sep: "\t", quote_char: '🚀')
+tsv.each_with_index do |row, i|
   # Uncomment to run individual rows (start with 0; header doesn't count)
   #next unless (i == 14 or i == 13)
   r = row.to_hash
 
-  object_id = r['File Name'] || r['Local Bib ID']
+  object_id = r['Repository ID']
+
+  next if object_id.nil?
 
   puts "Row #{i}: #{object_id}"
 
@@ -51,14 +54,18 @@ csv.each_with_index do |row, i|
       xml['lrp'].bibId {
         xml.text(r['Local Bib ID'])
       }
-      xml['lrp'].created {
-        parts = r['Date created'].split('/')
-        xml.text(DateTime.parse("20#{parts[2]}/#{parts[0]}/#{parts[1]}").iso8601.gsub('+00:00', '') + 'Z')
-      }
-      xml['lrp'].lastModified {
-        parts = r['Date modified'].split('/')
-        xml.text(DateTime.parse("20#{parts[2]}/#{parts[0]}/#{parts[1]}").iso8601.gsub('+00:00', '') + 'Z')
-      }
+      unless r['Date created'].nil?
+        xml['lrp'].created {
+          parts = r['Date created'].split('/')
+          xml.text(DateTime.parse("20#{parts[2]}/#{parts[0]}/#{parts[1]}").iso8601.gsub('+00:00', '') + 'Z')
+        }
+      end
+      unless r['Date modified'].nil?
+        xml['lrp'].lastModified {
+          parts = r['Date modified'].split('/')
+          xml.text(DateTime.parse("20#{parts[2]}/#{parts[0]}/#{parts[1]}").iso8601.gsub('+00:00', '') + 'Z')
+        }
+      end
       xml['lrp'].published {
         xml.text('true')
       }
@@ -66,7 +73,7 @@ csv.each_with_index do |row, i|
         xml.text(object_id)
       }
       if r['File Name'].nil?
-        children = csv.find_all{ |child| child['Local Bib ID'] == r['Local Bib ID'] && child['File Name'] }
+        children = tsv.find_all{ |child| child['Local Bib ID'] == r['Local Bib ID'] && child['File Name'] }
         if children.any?
           xml['lrp'].representativeItemId {
             xml.text(children.first.to_hash['File Name'])
@@ -170,22 +177,19 @@ csv.each_with_index do |row, i|
         }
       end
       xml['lrp'].collectionId {
-        xml.text('sanborn')
+        #xml.text(r['Collection ID'])
+        xml.text('sanborn') # TODO: fix
       }
-      if r['File Name'].nil?
-        page_number = 0
-      else
-        parents = csv.find_all{ |parent| parent['Local Bib ID'] == r['Local Bib ID'] && parent['CONTENTdm file name'].end_with?('.cpd') }
-        if parents.any?
-          page_number += 1
-          xml['lrp'].pageNumber {
-            xml.text(page_number)
-          }
-          xml['lrp'].parentId {
-            xml.text(parents.first.to_hash['Local Bib ID'])
-          }
-        end
+
+      unless r['Parent ID'].nil?
+        xml['lrp'].pageNumber {
+          xml.text(1) # TODO: fix
+        }
+        xml['lrp'].parentId {
+          xml.text(r['Parent ID'])
+        }
       end
+
       unless r['File Name'].nil?
         xml['lrp'].preservationMasterMediaType {
           xml.text('image/tiff')

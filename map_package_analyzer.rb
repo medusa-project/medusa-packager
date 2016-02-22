@@ -68,7 +68,9 @@ exit unless continue
 
 # check that all folders within the root package folder are bib ID folders
 Dir.glob(pathname + '/*').select{ |p| File.directory?(p) }.each do |p|
-  unless File.basename(p).match(/^[0-9]{7}/)
+  filename = File.basename(p)
+  # also allow a folder called "source"
+  unless filename.match(/^[0-9]{7}/) or filename == 'source'
     puts "#{p} does not begin with a valid bib ID."
     continue = false
   end

@@ -74,7 +74,7 @@ tsv.each_with_index do |row, i|
           xml.text(Time.now.utc.iso8601)
         else
           parts = r['Date created'].split('/')
-          xml.text(DateTime.parse("20#{parts[2]}/#{parts[0]}/#{parts[1]}").iso8601.gsub('+00:00', '') + 'Z')
+          xml.text(Time.parse("#{parts[2]}/#{parts[0]}/#{parts[1]}").iso8601.gsub('+00:00', '') + 'Z')
         end
       }
 
@@ -83,7 +83,7 @@ tsv.each_with_index do |row, i|
           xml.text(Time.now.utc.iso8601)
         else
           parts = r['Date modified'].split('/')
-          xml.text(DateTime.parse("20#{parts[2]}/#{parts[0]}/#{parts[1]}").iso8601.gsub('+00:00', '') + 'Z')
+          xml.text(Time.parse("#{parts[2]}/#{parts[0]}/#{parts[1]}").iso8601.gsub('+00:00', '') + 'Z')
         end
       }
 
@@ -206,6 +206,8 @@ tsv.each_with_index do |row, i|
         xml['lrp'].pageNumber {
           xml.text(r['Page Number'])
         }
+      end
+      unless r['Parent ID'].nil?
         xml['lrp'].parentId {
           xml.text(r['Parent ID'])
         }

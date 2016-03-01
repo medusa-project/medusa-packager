@@ -3,6 +3,7 @@
 require 'CSV'
 require 'fileutils'
 require 'nokogiri'
+require 'time' # adds an "iso8601" method to Time
 
 def decimal_degrees(dms)
   #  {decimal degrees} = {degrees} + {minutes}/60 + {seconds}/3600
@@ -54,18 +55,38 @@ tsv.each_with_index do |row, i|
       xml['lrp'].bibId {
         xml.text(r['Local Bib ID'])
       }
-      unless r['Date created'].nil?
-        xml['lrp'].created {
+      # underscore to work around ruby magic; will not appear in output
+      xml['lrp'].class_ {
+        class_ = r['Object Class']
+        if !class_.nil?
+          if class_.downcase == 'frontmatter'
+            xml.text('FrontMatter')
+          else
+            xml.text(class_.capitalize)
+          end
+        else
+          xml.text('Item')
+        end
+      }
+
+      xml['lrp'].created {
+        if r['Date created'].nil?
+          xml.text(Time.now.utc.iso8601)
+        else
           parts = r['Date created'].split('/')
           xml.text(DateTime.parse("20#{parts[2]}/#{parts[0]}/#{parts[1]}").iso8601.gsub('+00:00', '') + 'Z')
-        }
-      end
-      unless r['Date modified'].nil?
-        xml['lrp'].lastModified {
+        end
+      }
+
+      xml['lrp'].lastModified {
+        if r['Date modified'].nil?
+          xml.text(Time.now.utc.iso8601)
+        else
           parts = r['Date modified'].split('/')
           xml.text(DateTime.parse("20#{parts[2]}/#{parts[0]}/#{parts[1]}").iso8601.gsub('+00:00', '') + 'Z')
-        }
-      end
+        end
+      }
+
       xml['lrp'].published {
         xml.text('true')
       }
@@ -161,6 +182,7 @@ tsv.each_with_index do |row, i|
           }
         end
       end
+
       xml['lrp'].title {
         xml.text(r['Title'])
       }
@@ -180,22 +202,25 @@ tsv.each_with_index do |row, i|
         #xml.text(r['Collection ID'])
         xml.text('sanborn') # TODO: fix
       }
-
-      unless r['Parent ID'].nil?
+      unless r['Page Number'].nil?
         xml['lrp'].pageNumber {
-          xml.text(1) # TODO: fix
+          xml.text(r['Page Number'])
         }
         xml['lrp'].parentId {
           xml.text(r['Parent ID'])
         }
       end
-
       unless r['File Name'].nil?
         xml['lrp'].preservationMasterMediaType {
           xml.text('image/tiff')
         }
         xml['lrp'].preservationMasterPathname {
           xml.text("/#{r['Local Bib ID']}/preservation/#{r['File Name']}".chomp('.tif') + '.tif')
+        }
+      end
+      unless r['Subpage Number'].nil?
+        xml['lrp'].subpageNumber {
+          xml.text(r['Subpage Number'])
         }
       end
     }

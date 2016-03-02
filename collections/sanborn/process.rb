@@ -92,17 +92,6 @@ tsv.each_with_index do |row, i|
         }
       end
 
-      subclass = r['Object Class']
-      unless subclass.nil?
-        xml['lrp'].subclass {
-          if subclass.downcase == 'frontmatter'
-            xml.text('FrontMatter')
-          else
-            xml.text(subclass.capitalize)
-          end
-        }
-      end
-
       xml['lrp'].alternativeTitle {
         xml.text(r['Alternative Title'])
       }
@@ -218,6 +207,20 @@ tsv.each_with_index do |row, i|
           xml.text("/#{r['Local Bib ID']}/preservation/#{r['File Name']}".chomp('.tif') + '.tif')
         }
       end
+
+      subclass = r['Object Class']
+      unless subclass.nil?
+        if subclass.downcase == 'frontmatter'
+          xml['lrp'].subclass {
+            xml.text('FrontMatter')
+          }
+        elsif %w(index key page title).include?(subclass.downcase)
+          xml['lrp'].subclass {
+            xml.text(subclass.capitalize)
+          }
+        end
+      end
+
       unless r['Subpage Number'].nil?
         xml['lrp'].subpageNumber {
           xml.text(r['Subpage Number'])

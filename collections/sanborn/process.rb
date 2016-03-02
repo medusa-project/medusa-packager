@@ -55,26 +55,12 @@ tsv.each_with_index do |row, i|
       xml['lrp'].bibId {
         xml.text(r['Local Bib ID'])
       }
-      # underscore to work around ruby magic; will not appear in output
-      xml['lrp'].class_ {
-        class_ = r['Object Class']
-        if !class_.nil?
-          if class_.downcase == 'frontmatter'
-            xml.text('FrontMatter')
-          else
-            xml.text(class_.capitalize)
-          end
-        else
-          xml.text('Item')
-        end
-      }
-
       xml['lrp'].created {
         if r['Date created'].nil?
           xml.text(Time.now.utc.iso8601)
         else
           parts = r['Date created'].split('/')
-          xml.text(Time.parse("#{parts[2]}/#{parts[0]}/#{parts[1]}").iso8601.gsub('+00:00', '') + 'Z')
+          xml.text(Time.parse("#{parts[2]}/#{parts[0]}/#{parts[1]}").utc.iso8601.gsub('+00:00', ''))
         end
       }
 
@@ -83,7 +69,7 @@ tsv.each_with_index do |row, i|
           xml.text(Time.now.utc.iso8601)
         else
           parts = r['Date modified'].split('/')
-          xml.text(Time.parse("#{parts[2]}/#{parts[0]}/#{parts[1]}").iso8601.gsub('+00:00', '') + 'Z')
+          xml.text(Time.parse("#{parts[2]}/#{parts[0]}/#{parts[1]}").utc.iso8601.gsub('+00:00', ''))
         end
       }
 
@@ -105,6 +91,18 @@ tsv.each_with_index do |row, i|
           xml.text(object_id)
         }
       end
+
+      subclass = r['Object Class']
+      unless subclass.nil?
+        xml['lrp'].subclass {
+          if subclass.downcase == 'frontmatter'
+            xml.text('FrontMatter')
+          else
+            xml.text(subclass.capitalize)
+          end
+        }
+      end
+
       xml['lrp'].alternativeTitle {
         xml.text(r['Alternative Title'])
       }

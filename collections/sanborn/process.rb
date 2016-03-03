@@ -33,9 +33,6 @@ unless File.exist?(dest_root)
   exit
 end
 
-# copy collection.xml into place
-FileUtils.cp(__dir__ + '/source/collection.xml', dest_root)
-
 # quote_char needs to be a character that the source data is guaranteed not
 # to contain: in this case, a unicode rocket ship.
 tsv = CSV.parse(File.read(source_pathname), headers: true, col_sep: "\t", quote_char: '🚀')
@@ -204,7 +201,7 @@ tsv.each_with_index do |row, i|
           xml.text('image/tiff')
         }
         xml['lrp'].preservationMasterPathname {
-          xml.text("/#{r['Local Bib ID']}/preservation/#{r['File Name']}".chomp('.tif') + '.tif')
+          xml.text("/#{r['Local Bib ID']}/preservation/#{r['File Name']}".chomp('.jp2') + '.tif')
         }
       end
 

@@ -183,8 +183,7 @@ tsv.each_with_index do |row, i|
         }
       end
       xml['lrp'].collectionId {
-        #xml.text(r['Collection ID'])
-        xml.text('sanborn') # TODO: fix
+        xml.text('162') # Medusa collection ID
       }
       unless r['Page Number'].nil?
         xml['lrp'].pageNumber {

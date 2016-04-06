@@ -1,4 +1,7 @@
 #!/usr/bin/env ruby
+#
+# Transforms CSV source metadata for the Sanborn Maps collection into LRP AIP
+# XML files.
 
 require 'CSV'
 require 'fileutils'

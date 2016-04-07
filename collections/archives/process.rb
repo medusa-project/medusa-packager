@@ -7,6 +7,7 @@
 #
 # Empty folders are ignored.
 
+require 'digest/md5'
 require 'fileutils'
 require 'mime/types'
 require 'nokogiri'
@@ -14,11 +15,9 @@ require 'time' # adds an "iso8601" method to Time
 
 source_pathname = ARGV[0]
 dest_root = ARGV[1]
-id_prefix = ARGV[2]
-collection_id = ARGV[3]
-if !source_pathname or !dest_root or !id_prefix or !collection_id
-  puts 'Usage: process.rb <source pathname> <destination root> <ID prefix> '\
-      '<collection ID>'
+collection_id = ARGV[2]
+if !source_pathname or !dest_root or !collection_id
+  puts 'Usage: process.rb <source pathname> <destination root> <collection ID>'
   exit
 end
 
@@ -37,25 +36,24 @@ def relative_pathname(source_pathname, pathname)
   pathname.reverse.chomp(source_pathname.reverse).reverse
 end
 
-def id(source_pathname, pathname, id_prefix)
-  id_prefix + '-' + relative_pathname(source_pathname, pathname).
-      reverse.chomp('/').reverse.gsub(/[\/\.]/, '-')
+def encoded_id(source_pathname, pathname)
+  Digest::MD5.hexdigest(collection_id + unencoded_id(source_pathname, pathname))
 end
 
-def id_preserving_slashes(source_pathname, pathname, id_prefix)
-  id_prefix + '-' + relative_pathname(source_pathname, pathname).
-      reverse.chomp('/').reverse.gsub(/[\.]/, '-')
+def unencoded_id(source_pathname, pathname)
+  relative_pathname(source_pathname, pathname).reverse.chomp('/').reverse
 end
 
 Dir.glob(source_pathname + '/**/*').each do |pathname|
 
-  # Exclude empty folders
+  # Skip junk files
+  next if %w(Thumbs.db .DS_Store).include?(File.basename(pathname))
+
+  # Skip empty folders
   next if File.directory?(pathname) and Dir.glob(pathname + '/*').length < 1
 
-  puts pathname + ' ' + MIME::Types.of(pathname).first.to_s + "\n\n"
-
   # Replace . and / with -
-  object_id = id(source_pathname, pathname, id_prefix)
+  object_id = encoded_id(source_pathname, pathname)
 
   builder = Nokogiri::XML::Builder.new do |xml|
     xml['lrp'].Object("xmlns:lrp" => "http://www.library.illinois.edu/lrp/terms#") {
@@ -92,7 +90,7 @@ Dir.glob(source_pathname + '/**/*').each do |pathname|
       parent_path = File.expand_path(pathname + '/..')
       if parent_path.length > source_pathname.length
         xml['lrp'].parentId {
-          xml.text(id(source_pathname, parent_path, id_prefix))
+          xml.text(encoded_id(source_pathname, parent_path))
         }
       end
 
@@ -110,8 +108,7 @@ Dir.glob(source_pathname + '/**/*').each do |pathname|
     }
   end
 
-  dest = dest_root + '/' +
-      id_preserving_slashes(source_pathname, pathname, id_prefix)
+  dest = dest_root + '/' + unencoded_id(source_pathname, pathname)
   unless File.directory?(dest)
     puts "Creating #{dest}"
     FileUtils.mkdir_p(dest)

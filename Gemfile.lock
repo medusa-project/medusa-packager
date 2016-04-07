@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    mime-types (2.99.1)
     mini_portile2 (2.0.0)
     minitest (5.8.3)
     nokogiri (1.6.7)
@@ -15,6 +16,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  mime-types (~> 2.6)
   minitest
   nokogiri
   rake (~> 10.0)

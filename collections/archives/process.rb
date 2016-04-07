@@ -8,6 +8,7 @@
 # Empty folders are ignored.
 
 require 'fileutils'
+require 'mime/types'
 require 'nokogiri'
 require 'time' # adds an "iso8601" method to Time
 
@@ -46,19 +47,12 @@ def id_preserving_slashes(source_pathname, pathname, id_prefix)
       reverse.chomp('/').reverse.gsub(/[\.]/, '-')
 end
 
-def media_type(pathname)
-  'unknown/unknown'
-end
-
-def parent_pathname(pathname)
-  p = File.directory?(pathname) ? pathname : File.dirname(pathname)
-  File.expand_path(p + '/..')
-end
-
 Dir.glob(source_pathname + '/**/*').each do |pathname|
 
   # Exclude empty folders
-  next if Dir.glob(pathname + '/*').length < 1
+  next if File.directory?(pathname) and Dir.glob(pathname + '/*').length < 1
+
+  puts pathname + ' ' + MIME::Types.of(pathname).first.to_s + "\n\n"
 
   # Replace . and / with -
   object_id = id(source_pathname, pathname, id_prefix)
@@ -95,19 +89,21 @@ Dir.glob(source_pathname + '/**/*').each do |pathname|
         end
       end
 
-      parent_path = parent_pathname(pathname)
+      parent_path = File.expand_path(pathname + '/..')
       if parent_path.length > source_pathname.length
         xml['lrp'].parentId {
           xml.text(id(source_pathname, parent_path, id_prefix))
         }
       end
 
-      xml['lrp'].preservationMasterMediaType {
-        xml.text(media_type(pathname))
-      }
-      xml['lrp'].preservationMasterPathname {
-        xml.text(relative_pathname(source_pathname, pathname))
-      }
+      if File.file?(pathname)
+        xml['lrp'].preservationMasterMediaType {
+          xml.text(MIME::Types.of(pathname).first.to_s)
+        }
+        xml['lrp'].preservationMasterPathname {
+          xml.text(relative_pathname(source_pathname, pathname))
+        }
+      end
       xml['lrp'].subclass {
         xml.text(File.directory?(pathname) ? 'Directory' : 'File')
       }
@@ -121,13 +117,12 @@ Dir.glob(source_pathname + '/**/*').each do |pathname|
     FileUtils.mkdir_p(dest)
   end
 
-  dest_pathname = dest + '/' + File.basename(pathname) + '.xml'
+  dest_pathname = dest + '/item_' + File.basename(pathname) + '.xml'
   puts "Writing #{dest_pathname}"
   File.open(dest_pathname, 'w') do |file|
     file.write(builder.to_xml(indent: 2))
   end
 
-  #puts builder.to_xml(indent: 2)
-  #puts "\n\n"
+  #puts builder.to_xml(indent: 2) + "\n\n"
 
 end

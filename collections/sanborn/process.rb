@@ -83,12 +83,12 @@ tsv.each_with_index do |row, i|
         children = tsv.find_all{ |child| child['Local Bib ID'] == r['Local Bib ID'] && child['File Name'] }
         if children.any?
           xml['lrp'].representativeItemId {
-            xml.text(children.first.to_hash['File Name'])
+            xml.text(children.first.to_hash['File Name'].gsub('.', '_'))
           }
         end
       else
         xml['lrp'].representativeItemId {
-          xml.text(object_id)
+          xml.text(object_id.gsub('.', '_'))
         }
       end
 

@@ -36,7 +36,7 @@ def relative_pathname(source_pathname, pathname)
   pathname.reverse.chomp(source_pathname.reverse).reverse
 end
 
-def encoded_id(source_pathname, pathname)
+def encoded_id(collection_id, source_pathname, pathname)
   Digest::MD5.hexdigest(collection_id + unencoded_id(source_pathname, pathname))
 end
 
@@ -53,7 +53,7 @@ Dir.glob(source_pathname + '/**/*').each do |pathname|
   next if File.directory?(pathname) and Dir.glob(pathname + '/*').length < 1
 
   # Replace . and / with -
-  object_id = encoded_id(source_pathname, pathname)
+  object_id = encoded_id(collection_id, source_pathname, pathname)
 
   builder = Nokogiri::XML::Builder.new do |xml|
     xml['lrp'].Object("xmlns:lrp" => "http://www.library.illinois.edu/lrp/terms#") {
@@ -90,7 +90,7 @@ Dir.glob(source_pathname + '/**/*').each do |pathname|
       parent_path = File.expand_path(pathname + '/..')
       if parent_path.length > source_pathname.length
         xml['lrp'].parentId {
-          xml.text(encoded_id(source_pathname, parent_path))
+          xml.text(encoded_id(collection_id, source_pathname, parent_path))
         }
       end
 

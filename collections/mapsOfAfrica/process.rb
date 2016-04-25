@@ -45,8 +45,10 @@ tsv.each_with_index do |row, i|
   r = row.to_hash
 
   # object_id = r['File Name']
-  object_id = r['CONTENTdm file path']
   # object_id = r['Repository ID']
+
+  # Using 'CONTENTdm file path' because it's the only column that has truly unique values
+  object_id = r['CONTENTdm file path']
 
   next if object_id.nil?
 
@@ -122,15 +124,15 @@ tsv.each_with_index do |row, i|
           xml.text(r['Date'])
         }
       end
+
       xml['lrp'].dateCreated {
-        # xml.text(r['Date of Publication'])
-        # xml.text(r['Date created'])
         parts = r['Date created'].split('/')
         xml.text(Time.parse("#{parts[2]}/#{parts[0]}/#{parts[1]}").utc.iso8601.gsub('+00:00', ''))
       }
       xml['lrp'].dimensions {
         xml.text(r['Dimensions'])
       }
+
       if r['Extent']
         r['Extent'].split(';').each do |extent|
           xml['lrp'].extent {
@@ -151,13 +153,7 @@ tsv.each_with_index do |row, i|
           xml.text(r['Source'])
         }
       end
-      # if r['Source']
-      #   r['Source'].split(';').each do |isPartOf|
-      #     xml['lrp'].isPartOf {
-      #       xml.text(isPartOf.strip)
-      #     }
-      #   end
-      # end
+
       xml['lrp'].isPartOf {
         xml.text(r['Collection'])
       }
@@ -175,6 +171,9 @@ tsv.each_with_index do |row, i|
           }
         end
       end
+
+
+      # This is commented out until the we feel it works better for the metadata
 
       # if r['Coordinates']
       #   long, lat = r['Coordinates'].split('/')
@@ -323,6 +322,7 @@ tsv.each_with_index do |row, i|
     }
   end
 
+  # put into a single metadata folder instead of a special metadata folder for each bib id
   # dest = dest_root + '/' + r['Local Bib ID'] + '/metadata'
   dest = dest_root + '/' + '/metadata'
   unless File.directory?(dest)

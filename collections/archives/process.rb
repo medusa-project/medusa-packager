@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 #
 # Traverses an arbitrary file/folder hierarchy and creates DLS XML files
-# from its contents.
+# (version 2) from its contents.
 #
 # The output folder structure is the same as the source structure.
 #
@@ -63,55 +63,71 @@ Dir.glob(source_pathname + '/**/*').each do |pathname|
   object_id = encoded_id(collection_id, unencoded_id(source_pathname, pathname))
 
   builder = Nokogiri::XML::Builder.new do |xml|
-    xml['lrp'].Object("xmlns:lrp" => "http://www.library.illinois.edu/lrp/terms#") {
-      xml['lrp'].created {
-        xml.text(File.ctime(pathname).utc.iso8601.gsub('+00:00', ''))
-      }
-      xml['lrp'].lastModified {
-        xml.text(File.mtime(pathname).utc.iso8601.gsub('+00:00', ''))
-      }
-      xml['lrp'].published {
-        xml.text('true')
-      }
-      xml['lrp'].repositoryId {
+    xml['dls'].Object("xmlns:dls" => "http://digital.library.illinois.edu/terms#") {
+      # repositoryId
+      xml['dls'].repositoryId {
         xml.text(object_id)
       }
-      xml['lrp'].title {
-        xml.text(File.basename(pathname))
-      }
-      xml['lrp'].collectionId {
+
+      # collectionId
+      xml['dls'].collectionId {
         xml.text(collection_id)
       }
 
+      # parentId
+      parent_path = File.expand_path(pathname + '/..')
+      if parent_path.length > source_pathname.length
+        xml['dls'].parentId {
+          xml.text(encoded_id(collection_id,
+              unencoded_id(source_pathname, parent_path)))
+        }
+      end
+
+      # published
+      xml['dls'].published {
+        xml.text('true')
+      }
+
+      # pageNumber
       parent_dir = File.dirname(pathname)
       if parent_dir.length > source_pathname.length # exclude top-level files/folders
         Dir.glob(parent_dir + '/*').select{ |subpath| subpath == pathname}.
             each_with_index do |subpath, index|
-          xml['lrp'].pageNumber {
+          xml['dls'].pageNumber {
             xml.text(index + 1)
           }
           break
         end
       end
 
-      parent_path = File.expand_path(pathname + '/..')
-      if parent_path.length > source_pathname.length
-        xml['lrp'].parentId {
-          xml.text(encoded_id(collection_id,
-              unencoded_id(source_pathname, parent_path)))
+      # created
+      xml['dls'].created {
+        xml.text(File.ctime(pathname).utc.iso8601.gsub('+00:00', ''))
+      }
+
+      # lastModified
+      xml['dls'].lastModified {
+        xml.text(File.mtime(pathname).utc.iso8601.gsub('+00:00', ''))
+      }
+
+      # variant
+      xml['dls'].variant {
+        xml.text(File.directory?(pathname) ? 'Directory' : 'File')
+      }
+
+      # preservationMaster*
+      if File.file?(pathname)
+        xml['dls'].preservationMasterPathname {
+          xml.text(relative_pathname(source_pathname, pathname))
+        }
+        xml['dls'].preservationMasterMediaType {
+          xml.text(MIME::Types.of(pathname).first.to_s)
         }
       end
 
-      if File.file?(pathname)
-        xml['lrp'].preservationMasterMediaType {
-          xml.text(MIME::Types.of(pathname).first.to_s)
-        }
-        xml['lrp'].preservationMasterPathname {
-          xml.text(relative_pathname(source_pathname, pathname))
-        }
-      end
-      xml['lrp'].subclass {
-        xml.text(File.directory?(pathname) ? 'Directory' : 'File')
+      # title
+      xml['dls'].title {
+        xml.text(File.basename(pathname))
       }
     }
   end

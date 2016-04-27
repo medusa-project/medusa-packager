@@ -17,7 +17,7 @@ require 'tmpdir'
 #
 def get_schema(schema_name)
   uri = 'https://raw.githubusercontent.com/medusa-project/PearTree/develop/' +
-  'public/schema/1/' + schema_name
+  'public/schema/2/' + schema_name
   uri = URI.parse(uri)
 
   http = Net::HTTP.new(uri.host, uri.port)

@@ -3,9 +3,17 @@
 # Traverses an arbitrary file/folder hierarchy and creates DLS XML files
 # (version 2) from its contents.
 #
-# The output folder structure is the same as the source structure.
+# The output folder structure reflects the source structure.
 #
 # Empty folders are ignored.
+#
+# Arguments:
+#
+# <file group pathname>: Pathname of the Medudsa file group
+# <source pathname>: Pathname within <file group pathname> for selectively
+#                    importing only a portion of the file group tree.
+# <destination root>: Root pathname in which XML files will be generated.
+# <collection ID>: Medusa collection ID
 
 require 'digest/md5'
 require 'fileutils'
@@ -13,14 +21,21 @@ require 'mime/types'
 require 'nokogiri'
 require 'time' # adds an "iso8601" method to Time
 
-source_pathname = ARGV[0]
-dest_root = ARGV[1]
-collection_id = ARGV[2]
-if !source_pathname or !dest_root or !collection_id
-  puts 'Usage: process.rb <source pathname> <destination root> <collection ID>'
+file_group_pathname = ARGV[0]
+source_pathname = ARGV[1]
+dest_root = ARGV[2]
+collection_id = ARGV[3]
+if !file_group_pathname or !source_pathname or !dest_root or !collection_id
+  puts 'Usage: process.rb <file group pathname> <source pathname> '\
+  '<destination root> <collection ID>'
   exit
 end
 
+file_group_pathname = File.expand_path(file_group_pathname)
+unless File.exist?(file_group_pathname)
+  puts 'File group pathname does not exist.'
+  exit
+end
 source_pathname = File.expand_path(source_pathname)
 unless File.exist?(source_pathname)
   puts 'Source pathname does not exist.'
@@ -32,8 +47,8 @@ unless File.directory?(source_pathname)
 end
 dest_root = File.expand_path(dest_root)
 
-def relative_pathname(source_pathname, pathname)
-  pathname.reverse.chomp(source_pathname.reverse).reverse
+def relative_pathname(file_group_pathname, pathname)
+  pathname.reverse.chomp(file_group_pathname.reverse).reverse
 end
 
 def encoded_id(collection_id, unencoded_id)
@@ -118,7 +133,7 @@ Dir.glob(source_pathname + '/**/*').each do |pathname|
       # preservationMaster*
       if File.file?(pathname)
         xml['dls'].preservationMasterPathname {
-          xml.text(relative_pathname(source_pathname, pathname))
+          xml.text(relative_pathname(file_group_pathname, pathname))
         }
         xml['dls'].preservationMasterMediaType {
           xml.text(MIME::Types.of(pathname).first.to_s)

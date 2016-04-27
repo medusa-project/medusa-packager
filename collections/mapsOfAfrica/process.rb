@@ -280,7 +280,7 @@ tsv.each_with_index do |row, i|
         }
       end
       xml['lrp'].collectionId {
-        xml.text('339') # Medusa collection ID
+        xml.text('59') # Medusa collection ID
       }
       unless r['Page Number'].nil?
         xml['lrp'].pageNumber {
